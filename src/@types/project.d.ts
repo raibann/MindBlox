@@ -15,6 +15,7 @@ declare namespace IProject {
     created_by: string;
     created_at: string;
     updated_at: string;
+    deadline?: string;
     members: ProjectMember[];
     progress: {
       total_tasks: number;
@@ -65,6 +66,8 @@ declare namespace IProject {
   }
 
   interface Task {
+    id: string;
+    project_id: string;
     title: string;
     description?: string;
     assignee_id?: string;
@@ -73,6 +76,8 @@ declare namespace IProject {
     due_date?: string;
     subtasks: SubTask[];
     assignee?: User;
+    labels: string[];
+    dependencies: string[];
   }
 
   interface SubTask {

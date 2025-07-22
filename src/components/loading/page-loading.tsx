@@ -1,7 +1,11 @@
-import { Skeleton } from "../ui/skeleton";
+import SwirlingEffectSpinner from "../customized/spinner/spinner-06";
 
 const PageLoading = () => {
-  return <Skeleton className="h-full w-full" />;
+  return (
+    <div className="w-full h-full flex justify-center items-center">
+      <SwirlingEffectSpinner />
+    </div>
+  );
 };
 
 export default PageLoading;

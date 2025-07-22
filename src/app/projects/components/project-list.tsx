@@ -4,12 +4,15 @@ import { Progress } from "@/components/ui/progress";
 import { Calendar, Users, CheckCircle, Clock } from "lucide-react";
 import { Link } from "react-router";
 import { ROUTE_PATH } from "@/lib/route-path";
+import { Button } from "@/components/ui/button";
 
 interface ProjectListProps {
   projects: IProject.Project[];
+  onEdit?: (project: IProject.Project) => void;
+  onDelete?: (id: string) => void;
 }
 
-export function ProjectList({ projects }: ProjectListProps) {
+export function ProjectList({ projects, onEdit, onDelete }: ProjectListProps) {
   const getStatusColor = (status: IProject.Project["status"]) => {
     switch (status) {
       case "active":
@@ -103,6 +106,35 @@ export function ProjectList({ projects }: ProjectListProps) {
                   </span>
                 </div>
               </div>
+              {/* Actions */}
+              {(onEdit || onDelete) && (
+                <div className="flex gap-2 mt-4">
+                  {onEdit && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        onEdit(project);
+                      }}
+                    >
+                      Edit
+                    </Button>
+                  )}
+                  {onDelete && (
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        onDelete(project.id);
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Link>
         </Card>
