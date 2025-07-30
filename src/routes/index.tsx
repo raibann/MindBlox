@@ -1,6 +1,7 @@
 // import AppLayout from "@/layout";
 import Loading from "@/components/loading";
 import PageLoading from "@/components/loading/page-loading";
+import ErrorBoundary from "@/app/error";
 import { ROUTE_PATH } from "@/lib/route-path";
 import { lazy, Suspense } from "react";
 import { Route, Routes } from "react-router";
@@ -8,6 +9,7 @@ import { Route, Routes } from "react-router";
 // layout
 const AppLayout = lazy(() => import("../layout"));
 // pages
+const NotFoundPage = lazy(() => import("../app/not-found"));
 const DashboardPage = lazy(() => import("../app/dashboard"));
 const ProjectPage = lazy(() => import("../app/projects"));
 const ProjectDetailsPage = lazy(() => import("../app/projects/pages/details"));
@@ -20,7 +22,9 @@ const AllRoutes = () => {
       <Route
         element={
           <Suspense fallback={<Loading />}>
-            <AppLayout />
+            <ErrorBoundary>
+              <AppLayout />
+            </ErrorBoundary>
           </Suspense>
         }
       >
@@ -57,6 +61,7 @@ const AllRoutes = () => {
             </Suspense>
           }
         />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
       {/* End Layout */}
     </Routes>
