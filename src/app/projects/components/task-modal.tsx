@@ -9,11 +9,11 @@ import { TaskForm } from "./task-form";
 interface TaskModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  initial?: Partial<IProject.Task>;
+  initial?: IProject.Task;
   users: IProject.User[];
   labels: string[];
   tasks: IProject.Task[];
-  onSubmit: (values: Partial<IProject.Task>) => void;
+  onSubmit: (values: IProject.Task) => void;
   submitLabel?: string;
   title?: string;
 }

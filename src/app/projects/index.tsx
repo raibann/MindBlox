@@ -1,12 +1,12 @@
 import PageHeader from "@/components/page-header";
 import { ProjectList } from "./components/project-list";
-import { mockProjects } from "./utils/data";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { ProjectModal } from "./components/project-modal";
+import { useProjectContext } from "@/contexts/ProjectContext";
 
 const Project = () => {
-  const [projects, setProjects] = useState<IProject.Project[]>(mockProjects);
+  const { projects, deleteProject } = useProjectContext();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<IProject.Project | null>(
     null
@@ -23,27 +23,12 @@ const Project = () => {
   };
 
   const handleDelete = (id: string) => {
-    setProjects((prev) => prev.filter((p) => p.id !== id));
+    deleteProject(id);
   };
 
-  const handleSubmit = (values: Partial<IProject.Project>) => {
-    if (editingProject) {
-      setProjects((prev) =>
-        prev.map((p) => (p.id === editingProject.id ? { ...p, ...values } : p))
-      );
-    } else {
-      setProjects((prev) => [
-        ...prev,
-        {
-          ...values,
-          id: (Math.max(0, ...prev.map((p) => Number(p.id))) + 1).toString(),
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          progress: { total_tasks: 0, completed_tasks: 0, percentage: 0 },
-        } as IProject.Project,
-      ]);
-    }
-    setModalOpen(false);
+  const handleSubmit = (values: unknown) => {
+    // Additional actions can be performed here if needed
+    console.log("Project submitted:", values);
   };
 
   return (
@@ -54,7 +39,7 @@ const Project = () => {
         action={<Button onClick={handleCreate}>Create Project</Button>}
       />
       <ProjectList
-        projects={projects}
+        projects={projects as IProject.Project[]}
         onEdit={handleEdit}
         onDelete={handleDelete}
       />
@@ -65,6 +50,7 @@ const Project = () => {
         onSubmit={handleSubmit}
         submitLabel={editingProject ? "Update" : "Create"}
         title={editingProject ? "Edit Project" : "Create Project"}
+        mode={editingProject ? "edit" : "create"}
       />
     </>
   );

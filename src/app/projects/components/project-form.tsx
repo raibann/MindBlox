@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -9,16 +11,48 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { mockUsers } from "../utils/data";
+import { useProjectContext } from "@/contexts/ProjectContext";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarRange } from "lucide-react";
+import type { DateRange } from "react-day-picker";
+import { Calendar } from "@/components/ui/calendar";
 
-/**
- * @typedef {import('../../../@types/project').IProject} IProject
- */
+// Zod schema for project validation
+const projectSchema = z.object({
+  id: z.string().optional(),
+  title: z
+    .string()
+    .min(1, "Project title is required")
+    .max(100, "Project title must be less than 100 characters"),
+  description: z.string().optional(),
+  status: z.string(),
+  deadline: z
+    .object({
+      from: z.date().optional(),
+      to: z.date().optional(),
+    })
+    .optional()
+    .refine(
+      (data) => data?.from && data?.to && data?.from < data?.to,
+      "Deadline must be a valid date range"
+    ),
+  created_by: z.string().optional(),
+  created_at: z.string().optional(),
+  updated_at: z.string().optional(),
+});
+
+export type ProjectFormData = z.infer<typeof projectSchema>;
 
 interface ProjectFormProps {
-  initial?: Partial<IProject.Project>;
-  onSubmit: (values: Partial<IProject.Project>) => void;
+  initial?: IProject.Project;
+  onSubmit?: (values: ProjectFormData) => void;
   submitLabel?: string;
+  mode?: "create" | "edit";
 }
 
 const statusOptions: IProject.Project["status"][] = [
@@ -28,121 +62,175 @@ const statusOptions: IProject.Project["status"][] = [
   "on-hold",
 ];
 
+const defaultValues: ProjectFormData = {
+  title: "",
+  description: "",
+  status: "planning",
+  deadline: undefined,
+};
+
 export function ProjectForm({
-  initial = {},
+  initial,
   onSubmit,
   submitLabel = "Save",
+  mode = "create",
 }: ProjectFormProps) {
-  const [name, setName] = useState(initial.name || "");
-  const [description, setDescription] = useState(initial.description || "");
-  const [status, setStatus] = useState<IProject.Project["status"]>(
-    initial.status || "planning"
-  );
-  const [deadline, setDeadline] = useState(
-    initial.deadline ? initial.deadline.slice(0, 10) : ""
-  );
-  const [members, setMembers] = useState<IProject.User[]>(
-    initial.members?.map((m: IProject.ProjectMember) => m.user) || []
-  );
+  const { addProject, updateProject } = useProjectContext();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit({
-      ...initial,
-      name,
-      description,
-      status,
-      deadline: deadline ? new Date(deadline).toISOString() : undefined,
-      members: members.map((user) => ({
-        user_id: user.id,
-        project_id: initial.id || "", // will be set by parent
-        role: user.role,
-        joined_at: new Date().toISOString(),
-        user,
-      })),
-    });
-  };
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<ProjectFormData>({
+    resolver: zodResolver(projectSchema),
+    defaultValues: initial
+      ? {
+          ...initial,
+          deadline: initial.deadline
+            ? {
+                from: new Date(initial.deadline.from),
+                to: new Date(initial.deadline.to),
+              }
+            : undefined,
+        }
+      : defaultValues,
+  });
 
-  const toggleMember = (user: IProject.User) => {
-    setMembers((prev) =>
-      prev.find((m) => m.id === user.id)
-        ? prev.filter((m) => m.id !== user.id)
-        : [...prev, user]
-    );
+  const onFormSubmit = async (data: ProjectFormData) => {
+    try {
+      const projectData = {
+        ...initial,
+        title: data.title,
+        description: data.description,
+        status: data.status,
+        deadline:
+          data.deadline?.from && data.deadline?.to
+            ? {
+                from: new Date(data.deadline.from).toISOString(),
+                to: new Date(data.deadline.to).toISOString(),
+              }
+            : undefined,
+        created_by: data.created_by,
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+      };
+
+      if (mode === "create") {
+        addProject(projectData as IProject.Project);
+      } else if (initial?.id) {
+        updateProject(initial.id, projectData as IProject.Project);
+      }
+
+      // Call custom onSubmit if provided
+      if (onSubmit) {
+        onSubmit(data);
+      }
+
+      // Reset form after successful submission
+      reset();
+    } catch (error) {
+      console.error("Error submitting project:", error);
+    }
   };
 
   return (
-    <form className="space-y-4" onSubmit={handleSubmit}>
-      <div>
-        <Label htmlFor="name">Project Name</Label>
+    <form className="space-y-4" onSubmit={handleSubmit(onFormSubmit)}>
+      <div className="space-y-3">
+        <Label htmlFor="title">Project Title</Label>
         <Input
-          id="name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
+          id="title"
+          {...register("title")}
+          className={errors.title ? "border-red-500" : ""}
         />
+        {errors.title && (
+          <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>
+        )}
       </div>
-      <div>
-        <Label htmlFor="description">Description</Label>
-        <Input
-          id="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-      </div>
-      <div>
-        <Label htmlFor="status">Status</Label>
-        <Select
-          value={status}
-          onValueChange={(v) => setStatus(v as IProject.Project["status"])}
-        >
-          <SelectTrigger id="status">
-            <SelectValue placeholder="Select status" />
-          </SelectTrigger>
-          <SelectContent>
-            {statusOptions.map((s) => (
-              <SelectItem key={s} value={s}>
-                {s}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      <div>
-        <Label htmlFor="deadline">Deadline</Label>
-        <Input
-          id="deadline"
-          type="date"
-          value={deadline}
-          onChange={(e) => setDeadline(e.target.value)}
-        />
-      </div>
-      <div>
-        <Label>Members</Label>
-        <div className="flex flex-wrap gap-2">
-          {mockUsers.map((user) => (
-            <Button
-              key={user.id}
-              type="button"
-              variant={
-                members.find((m) => m.id === user.id) ? "default" : "outline"
-              }
-              onClick={() => toggleMember(user)}
-              className="flex items-center gap-2 px-2 py-1 text-xs"
+      <div className="flex gap-4">
+        <div className="space-y-3">
+          <Label htmlFor="status">Status</Label>
+          <Select
+            value={watch("status")}
+            onValueChange={(value) =>
+              setValue("status", value as ProjectFormData["status"])
+            }
+          >
+            <SelectTrigger
+              id="status"
+              className={errors.status ? "border-red-500" : ""}
             >
-              <img
-                src={user.avatar}
-                alt={user.name}
-                className="w-5 h-5 rounded-full"
+              <SelectValue placeholder="Select status" />
+            </SelectTrigger>
+            <SelectContent>
+              {statusOptions.map((s) => (
+                <SelectItem key={s} value={s}>
+                  {s}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.status && (
+            <p className="text-sm text-red-500 mt-1">{errors.status.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-3 grow">
+          <Label htmlFor="deadline">Deadline</Label>
+          <Popover modal>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                id="deadline"
+                className="justify-between font-normal w-full mb-0"
+              >
+                {watch("deadline") &&
+                watch("deadline")?.from &&
+                watch("deadline")?.to
+                  ? `${watch("deadline")?.from?.toLocaleDateString()} - ${watch(
+                      "deadline"
+                    )?.to?.toLocaleDateString()}`
+                  : "Select date"}
+                <CalendarRange />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-auto overflow-hidden p-0"
+              align="center"
+            >
+              <Calendar
+                mode="range"
+                selected={watch("deadline") as DateRange | undefined}
+                captionLayout="dropdown"
+                numberOfMonths={2}
+                onSelect={(range) => {
+                  setValue("deadline", range);
+                }}
               />
-              {user.name}
-              <span className="text-muted-foreground">({user.role})</span>
-            </Button>
-          ))}
+            </PopoverContent>
+          </Popover>
+          {errors.deadline && (
+            <p className="text-sm text-red-500 mt-1">
+              {errors.deadline.message}
+            </p>
+          )}
         </div>
       </div>
-      <Button type="submit" className="w-full mt-2">
-        {submitLabel}
+
+      <div className="space-y-3">
+        <Label htmlFor="description">Description</Label>
+        <Textarea id="description" {...register("description")} />
+        {errors.description && (
+          <p className="text-sm text-red-500 mt-1">
+            {errors.description.message}
+          </p>
+        )}
+      </div>
+
+      <Button type="submit" className="w-full mt-2" disabled={isSubmitting}>
+        {isSubmitting ? "Saving..." : submitLabel}
       </Button>
     </form>
   );

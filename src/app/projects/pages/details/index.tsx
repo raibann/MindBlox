@@ -3,12 +3,11 @@ import PageHeader from "@/components/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookType, Layers2 } from "lucide-react";
 import { useState } from "react";
-import { mockTasks, mockUsers, mockLabels } from "../utils/data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TaskModal } from "../components/task-modal";
-import { DatabaseSchemaNodeFlow } from "../components/database-schema-node-flow";
+import { TaskModal } from "../../components/task-modal";
+import { DatabaseSchemaNodeFlow } from "../../components/database-schema-node-flow";
 import React from "react";
 import ReactFlow, {
   Background,
@@ -45,9 +44,6 @@ const tabs = [
 const ProjectDetails = () => {
   const param = useParams();
   const projectId = param.id;
-  const [tasks, setTasks] = useState(
-    mockTasks.filter((t) => t.project_id === projectId)
-  );
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<IProject.Task | null>(null);
 
@@ -83,28 +79,28 @@ const ProjectDetails = () => {
   };
 
   const handleDelete = (id: string) => {
-    setTasks((prev) => prev.filter((t) => t.id !== id));
+    // setTasks((prev) => prev.filter((t) => t.id !== id));
   };
 
-  const handleSubmit = (values: Partial<IProject.Task>) => {
+  const handleSubmit = (values: IProject.Task) => {
     if (editingTask) {
-      setTasks((prev) =>
-        prev.map((t) => (t.id === editingTask.id ? { ...t, ...values } : t))
-      );
+      // setTasks((prev) =>
+      //   prev.map((t) => (t.id === editingTask.id ? { ...t, ...values } : t))
+      // );
     } else {
-      setTasks((prev) => [
-        ...prev,
-        {
-          ...values,
-          id: Math.random().toString(36).slice(2),
-          project_id: projectId || "",
-          status: values.status || "todo",
-          priority: values.priority || "medium",
-          subtasks: values.subtasks || [],
-          labels: values.labels || [],
-          dependencies: values.dependencies || [],
-        } as IProject.Task,
-      ]);
+      // setTasks((prev) => [
+      //   ...prev,
+      //   {
+      //     ...values,
+      //     id: Math.random().toString(36).slice(2),
+      //     project_id: projectId || "",
+      //     status: values.status || "todo",
+      //     priority: values.priority || "medium",
+      //     subtasks: values.subtasks || [],
+      //     labels: values.labels || [],
+      //     dependencies: values.dependencies || [],
+      //   } as IProject.Task,
+      // ]);
     }
     setModalOpen(false);
   };
@@ -152,7 +148,7 @@ const ProjectDetails = () => {
                           {status.replace("-", " ")}
                         </h3>
                         <div className="flex flex-col gap-3">
-                          {tasks
+                          {/* {tasks
                             .filter((t) => t.status === status)
                             .map((task) => (
                               <Card key={task.id} className="shadow-sm">
@@ -205,12 +201,12 @@ const ProjectDetails = () => {
                                   </Button>
                                 </CardContent>
                               </Card>
-                            ))}
+                            ))} */}
                         </div>
                       </div>
                     ))}
                   </div>
-                  <TaskModal
+                  {/* <TaskModal
                     open={modalOpen}
                     onOpenChange={setModalOpen}
                     initial={editingTask || undefined}
@@ -220,7 +216,7 @@ const ProjectDetails = () => {
                     onSubmit={handleSubmit}
                     submitLabel={editingTask ? "Update" : "Create"}
                     title={editingTask ? "Edit Task" : "Create Task"}
-                  />
+                  /> */}
                 </div>
               ) : tab.value === "database" ? (
                 <div className="w-full h-[600px] bg-muted rounded-lg">

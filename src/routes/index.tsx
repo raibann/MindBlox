@@ -9,10 +9,9 @@ import { Route, Routes } from "react-router";
 const AppLayout = lazy(() => import("../layout"));
 // pages
 const DashboardPage = lazy(() => import("../app/dashboard"));
-//---- project ----//
 const ProjectPage = lazy(() => import("../app/projects"));
-const ProjectDetailsPage = lazy(() => import("../app/projects/details"));
-//---- end project ----///
+const ProjectDetailsPage = lazy(() => import("../app/projects/pages/details"));
+const TaskPage = lazy(() => import("../app/projects/pages/tasks"));
 
 const AllRoutes = () => {
   return (
@@ -47,6 +46,14 @@ const AllRoutes = () => {
           element={
             <Suspense fallback={<PageLoading />}>
               <ProjectDetailsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path={ROUTE_PATH.project.tasks}
+          element={
+            <Suspense fallback={<PageLoading />}>
+              <TaskPage />
             </Suspense>
           }
         />

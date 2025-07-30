@@ -1,18 +1,20 @@
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ProjectForm } from "./project-form";
+import { ProjectForm, type ProjectFormData } from "./project-form";
 
 interface ProjectModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  initial?: Partial<IProject.Project>;
-  onSubmit: (values: Partial<IProject.Project>) => void;
+  initial?: IProject.Project;
+  onSubmit?: (values: ProjectFormData) => void;
   submitLabel?: string;
   title?: string;
+  mode?: "create" | "edit";
 }
 
 export function ProjectModal({
@@ -22,17 +24,29 @@ export function ProjectModal({
   onSubmit,
   submitLabel = "Save",
   title = "Project",
+  mode = "create",
 }: ProjectModalProps) {
+  const handleSubmit = (values: ProjectFormData) => {
+    // Call the custom onSubmit if provided
+    if (onSubmit) {
+      onSubmit(values);
+    }
+    // Close the modal after submission
+    onOpenChange(false);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md w-full">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
+          <DialogDescription />
         </DialogHeader>
         <ProjectForm
           initial={initial}
-          onSubmit={onSubmit}
+          onSubmit={handleSubmit}
           submitLabel={submitLabel}
+          mode={mode}
         />
       </DialogContent>
     </Dialog>
