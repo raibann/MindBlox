@@ -16,10 +16,8 @@ declare namespace IProject {
   interface Task {
     id: string;
     title: string;
-    description?: string;
     status: string;
-    created_by?: string;
-    created_at?: string;
-    updated_at?: string;
+    label: string;
+    priority: string;
   }
 }

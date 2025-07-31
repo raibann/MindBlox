@@ -23,7 +23,7 @@ const PageHeader = ({
   return (
     <div
       className={cn(
-        "mb-4 flex items-start justify-between gap-4 sm:flex-row",
+        "flex items-start justify-between gap-4 sm:flex-row",
         className
       )}
     >
@@ -32,11 +32,9 @@ const PageHeader = ({
           <ArrowLeftIcon className="size-4" />
         </Button>
       )}
-      <div className="flex flex-col gap-1 grow">
+      <div className="flex flex-col grow">
         <h1 className="text-xl font-semibold">{title}</h1>
-        {description && (
-          <p className="text-muted-foreground text-sm">{description}</p>
-        )}
+        <p className="text-muted-foreground text-sm">{description}</p>
       </div>
       {action && <div>{action}</div>}
     </div>
