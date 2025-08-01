@@ -49,7 +49,6 @@ export const columns: ColumnDef<IProject.Task>[] = [
     ),
     cell: ({ row }) => {
       const label = labels.find((label) => label.value === row.original.label);
-
       return (
         <div className="flex gap-2">
           {label && <Badge variant="outline">{label.label}</Badge>}
