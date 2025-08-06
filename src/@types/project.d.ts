@@ -8,8 +8,8 @@ declare namespace IProject {
     created_at?: string;
     updated_at?: string;
     deadline?: {
-      from: string;
-      to: string;
+      from?: Date;
+      to?: Date;
     };
   }
 
@@ -19,5 +19,9 @@ declare namespace IProject {
     status: string;
     label: string;
     priority: string;
+    deadline?: {
+      from?: Date;
+      to?: Date;
+    };
   }
 }

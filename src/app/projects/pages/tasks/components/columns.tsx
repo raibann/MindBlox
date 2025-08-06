@@ -7,6 +7,7 @@ import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
 
 export const columns: ColumnDef<IProject.Task>[] = [
   {
@@ -84,6 +85,25 @@ export const columns: ColumnDef<IProject.Task>[] = [
     },
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id));
+    },
+  },
+  {
+    accessorKey: "deadline",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Deadline" />
+    ),
+    cell: ({ row }) => {
+      const deadline = row.original.deadline?.from;
+      const deadlineTo = row.original.deadline?.to;
+      if (deadline && deadlineTo) {
+        return (
+          <div>
+            {format(deadline, "MM/dd/yyyy")} -{" "}
+            {format(deadlineTo, "MM/dd/yyyy")}
+          </div>
+        );
+      }
+      return <div>N/A</div>;
     },
   },
   {

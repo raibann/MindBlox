@@ -77,4 +77,8 @@ export const dataTasks = Array.from({ length: 10 }, () => ({
   status: faker.helpers.arrayElement(statuses).value,
   label: faker.helpers.arrayElement(labels).value,
   priority: faker.helpers.arrayElement(priorities).value,
+  deadline: {
+    from: faker.date.recent(),
+    to: faker.date.future(),
+  },
 }));
